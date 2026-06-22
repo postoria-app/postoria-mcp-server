@@ -1,0 +1,62 @@
+{
+  "name": "@postoria/mcp-server",
+  "version": "1.0.1",
+  "description": "MCP server for the Postoria Public API.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://postoria.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/postoria-app/postoria-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/postoria-app/postoria-mcp-server/issues"
+  },
+  "keywords": [
+    "postoria",
+    "mcp",
+    "model-context-protocol",
+    "social-media",
+    "social-media-management",
+    "ai-agents"
+  ],
+  "bin": {
+    "postoria-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "server.json"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev:stdio": "tsx src/index.ts stdio",
+    "dev:http": "tsx src/index.ts http",
+    "start:stdio": "node dist/index.js stdio",
+    "start:http": "node dist/index.js http",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^4.19.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "@typescript-eslint/eslint-plugin": "^7.16.1",
+    "@typescript-eslint/parser": "^7.16.1",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  }
+}

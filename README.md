@@ -20,20 +20,23 @@ npx -y @postoria/mcp-server
 
 ## Supported tools
 
-| Tool                    | Description                                  |
-| ----------------------- | -------------------------------------------- |
-| `list_workspaces`       | List available Postoria workspaces           |
-| `list_social_accounts`  | List social accounts in a workspace          |
-| `list_queues`           | List queues in a workspace                   |
-| `create_media_upload`   | Create a direct media upload request         |
-| `complete_media_upload` | Mark an uploaded media item as complete      |
-| `import_media_from_url` | Import media from a remote URL               |
-| `get_media`             | Get media status and details                 |
-| `publish_post_now`      | Publish a post immediately                   |
-| `schedule_post`         | Schedule a post for a specific time          |
-| `add_post_to_queue`     | Add a post to a Postoria queue               |
-| `get_post`              | Get post status and details                  |
-| `delete_post`           | Delete a post created through the Public API |
+| Tool                     | Description                                          |
+| ------------------------ | ---------------------------------------------------- |
+| `list_workspaces`        | List available Postoria workspaces                   |
+| `list_social_accounts`   | List social accounts in a workspace                  |
+| `list_queues`            | List queues in a workspace                           |
+| `create_media_upload`    | Create a signed media upload URL                     |
+| `complete_media_upload`  | Complete a media upload after raw bytes are uploaded |
+| `upload_media_from_file` | Upload a local file from stdio clients               |
+| `import_media_from_url`  | Import media from a public URL                       |
+| `get_media`              | Get media status and details                         |
+| `publish_post_now`       | Publish a post immediately                           |
+| `schedule_post`          | Schedule a post for a specific time                  |
+| `add_post_to_queue`      | Add a post to a Postoria queue                       |
+| `get_post`               | Get post status and details                          |
+| `delete_post`            | Delete a post created through the Public API         |
+
+`upload_media_from_file` is available only in local `stdio` mode. It is not exposed through the hosted Streamable HTTP endpoint.
 
 ## Requirements
 
@@ -72,6 +75,14 @@ Send your Postoria API key as a Bearer token:
 Authorization: Bearer ptr_your_api_key_here
 ```
 
+## Media upload options
+
+Use `import_media_from_url` when the media is already available through a public URL.
+
+Use `create_media_upload` when the client will upload raw file bytes to the returned signed upload URL. After the raw bytes are uploaded with `PUT`, call `complete_media_upload`.
+
+Use `upload_media_from_file` in local `stdio` mode when the media file exists on the same machine where the MCP server is running.
+
 ## Run from source
 
 ```bash
@@ -88,8 +99,10 @@ POSTORIA_API_KEY=ptr_your_api_key_here npm run dev:stdio
 Run in local HTTP mode:
 
 ```bash
-POSTORIA_API_KEY=ptr_your_api_key_here npm run dev:http
+npm run dev:http
 ```
+
+HTTP mode requires the MCP client to send the Postoria API key in the `Authorization` header. `POSTORIA_API_KEY` is used by local stdio mode only.
 
 Local HTTP endpoint:
 
@@ -114,7 +127,8 @@ http://localhost:3000/health
 
 - The MCP server does not store Postoria API keys.
 - Local stdio mode reads `POSTORIA_API_KEY` from the environment.
-- Hosted HTTP mode expects `Authorization: Bearer <api_key>`.
+- Hosted HTTP mode requires `Authorization: Bearer <api_key>` on MCP initialization.
+- `POSTORIA_API_KEY` is used by local stdio mode only.
 - `delete_post` is destructive and should only be called after user confirmation.
 
 ## Development

@@ -18,6 +18,7 @@ const packageVersion = packageJson.version ?? '0.0.0';
 export type CreatePostoriaMcpServerOptions = {
   apiKey: string;
   apiBaseUrl?: string;
+  enableLocalFileUpload?: boolean;
 };
 
 export function createPostoriaMcpServer(options: CreatePostoriaMcpServerOptions) {
@@ -33,7 +34,9 @@ export function createPostoriaMcpServer(options: CreatePostoriaMcpServerOptions)
   });
 
   registerWorkspaceTools(server, client);
-  registerMediaTools(server, client);
+  registerMediaTools(server, client, {
+    enableLocalFileUpload: options.enableLocalFileUpload === true,
+  });
   registerPostTools(server, client);
 
   server.resource('postoria_api_info', 'postoria://api-info', async (uri) => ({

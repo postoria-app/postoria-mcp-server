@@ -74,6 +74,20 @@ export class PostoriaClient {
     return this.request<Media>(`/workspaces/${workspaceId}/media/${mediaId}`);
   }
 
+  async uploadToSignedUrl(uploadUrl: string, data: Uint8Array | Buffer) {
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      body: data as unknown as BodyInit,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(
+        `Signed upload failed with HTTP ${response.status}${text ? `: ${text}` : ''}`,
+      );
+    }
+  }
+
   createPost(workspaceId: number, body: CreatePostRequest) {
     return this.request<Post>(`/workspaces/${workspaceId}/posts`, {
       method: 'POST',

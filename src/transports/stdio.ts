@@ -10,6 +10,7 @@ export async function runStdioServer() {
   const server = createPostoriaMcpServer({
     apiKey,
     apiBaseUrl: process.env.POSTORIA_API_BASE_URL,
+    enableLocalFileUpload: true,
   });
 
   const transport = new StdioServerTransport();

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { PostoriaClient } from '../postoria/client.js';
 import type { CreatePostRequest } from '../postoria/types.js';
-import { callEmptyTool, callTool } from './common.js';
+import { callEmptyTool, callFormattedTool } from './common.js';
+import { formatPost, formatPostCreated } from './formatters.js';
 import { createPostBaseSchema, postIdSchema, workspaceIdSchema } from './schemas.js';
 
 type CreatePostArgs = Omit<CreatePostRequest, 'publish_mode'> & {
@@ -15,11 +16,13 @@ export function registerPostTools(server: any, client: PostoriaClient) {
     'Create and publish a Postoria post immediately.',
     createPostBaseSchema,
     async (args: Omit<CreatePostArgs, 'publish_mode'>) =>
-      callTool(() =>
-        client.createPost(
-          args.workspace_id,
-          buildPostBody({ ...args, publish_mode: 'publish_now' }),
-        ),
+      callFormattedTool(
+        () =>
+          client.createPost(
+            args.workspace_id,
+            buildPostBody({ ...args, publish_mode: 'publish_now' }),
+          ),
+        (post) => formatPostCreated(post, 'Post created for immediate publishing', context(args)),
       ),
   );
 
@@ -31,8 +34,13 @@ export function registerPostTools(server: any, client: PostoriaClient) {
       scheduled_time: z.string().datetime().describe('UTC ISO 8601 date-time.'),
     },
     async (args: Omit<CreatePostArgs, 'publish_mode'> & { scheduled_time: string }) =>
-      callTool(() =>
-        client.createPost(args.workspace_id, buildPostBody({ ...args, publish_mode: 'schedule' })),
+      callFormattedTool(
+        () =>
+          client.createPost(
+            args.workspace_id,
+            buildPostBody({ ...args, publish_mode: 'schedule' }),
+          ),
+        (post) => formatPostCreated(post, 'Post scheduled successfully', context(args)),
       ),
   );
 
@@ -44,8 +52,10 @@ export function registerPostTools(server: any, client: PostoriaClient) {
       queue_id: z.number().int().positive().describe('Postoria queue ID.'),
     },
     async (args: Omit<CreatePostArgs, 'publish_mode'> & { queue_id: number }) =>
-      callTool(() =>
-        client.createPost(args.workspace_id, buildPostBody({ ...args, publish_mode: 'queue' })),
+      callFormattedTool(
+        () =>
+          client.createPost(args.workspace_id, buildPostBody({ ...args, publish_mode: 'queue' })),
+        (post) => formatPostCreated(post, 'Post added to queue successfully', context(args)),
       ),
   );
 
@@ -57,7 +67,10 @@ export function registerPostTools(server: any, client: PostoriaClient) {
       ...postIdSchema,
     },
     async ({ workspace_id, post_id }: { workspace_id: number; post_id: number }) =>
-      callTool(() => client.getPost(workspace_id, post_id)),
+      callFormattedTool(
+        () => client.getPost(workspace_id, post_id),
+        (post) => formatPost(post, workspace_id),
+      ),
   );
 
   server.tool(
@@ -70,44 +83,38 @@ export function registerPostTools(server: any, client: PostoriaClient) {
     async ({ workspace_id, post_id }: { workspace_id: number; post_id: number }) =>
       callEmptyTool(
         () => client.deletePost(workspace_id, post_id),
-        `Post ${post_id} was deleted from workspace ${workspace_id}.`,
+        ['Post deleted.', '', 'Post', `ID: ${post_id}`, `Workspace ID: ${workspace_id}`].join('\n'),
       ),
   );
 }
 
 function buildPostBody(args: CreatePostArgs): CreatePostRequest {
-  const {
-    workspace_id: _workspaceId,
-    publish_mode,
-    social_account_ids,
-    content_type,
-    media_ids,
-    caption,
-    link_url,
-    first_comment,
-    comment_delay,
-    scheduled_time,
-    queue_id,
-    repost,
-    youtube,
-    tiktok,
-  } = args;
-
   return removeUndefined({
-    publish_mode,
-    social_account_ids,
-    content_type,
-    media_ids,
-    caption,
-    link_url,
-    first_comment,
-    comment_delay,
-    scheduled_time,
-    queue_id,
-    repost,
-    youtube,
-    tiktok,
+    publish_mode: args.publish_mode,
+    social_account_ids: args.social_account_ids,
+    content_type: args.content_type,
+    media_ids: args.media_ids,
+    caption: args.caption,
+    link_url: args.link_url,
+    first_comment: args.first_comment,
+    comment_delay: args.comment_delay,
+    scheduled_time: args.scheduled_time,
+    queue_id: args.queue_id,
+    repost: args.repost,
+    youtube: args.youtube,
+    tiktok: args.tiktok,
   });
+}
+
+function context(args: Omit<CreatePostArgs, 'publish_mode'>) {
+  return {
+    workspaceId: args.workspace_id,
+    socialAccountIds: args.social_account_ids,
+    mediaIds: args.media_ids,
+    scheduledTime: args.scheduled_time,
+    queueId: args.queue_id,
+    caption: args.caption,
+  };
 }
 
 function removeUndefined<T extends Record<string, unknown>>(value: T): T {

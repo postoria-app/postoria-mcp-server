@@ -5,6 +5,7 @@ import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { createPostoriaMcpServer } from '../server.js';
 
 const MCP_SESSION_ID_HEADER = 'mcp-session-id';
+const DEFAULT_SESSION_MAX_AGE_MS = 1000 * 60 * 60;
 
 type SessionState = {
   transport: StreamableHTTPServerTransport;
@@ -84,9 +85,7 @@ export async function runHttpServer() {
       }
 
       const server = createPostoriaMcpServer({ apiKey, apiBaseUrl });
-      let transport: StreamableHTTPServerTransport;
-
-      transport = new StreamableHTTPServerTransport({
+      const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (initializedSessionId: string) => {
           sessions.set(initializedSessionId, {
@@ -154,7 +153,7 @@ export async function runHttpServer() {
 
   const cleanup = setInterval(
     () => {
-      const maxAgeMs = Number(process.env.MCP_SESSION_MAX_AGE_MS || 1000 * 60 * 60 * 12);
+      const maxAgeMs = Number(process.env.MCP_SESSION_MAX_AGE_MS || DEFAULT_SESSION_MAX_AGE_MS);
       const now = Date.now();
 
       for (const [sessionId, state] of sessions.entries()) {
@@ -179,8 +178,7 @@ function extractApiKey(req: Request) {
     return authorization.slice('bearer '.length).trim();
   }
 
-  // Useful for local HTTP development. Do not rely on this in hosted production.
-  return process.env.POSTORIA_API_KEY || undefined;
+  return undefined;
 }
 
 function getHeader(req: Request, name: string) {

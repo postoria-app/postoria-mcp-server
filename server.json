@@ -3,7 +3,7 @@
   "name": "io.postoria/mcp-server",
   "title": "Postoria",
   "description": "MCP server for the Postoria Public API. Create, schedule, queue, inspect, and delete Postoria posts through AI agents.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "websiteUrl": "https://postoria.io",
   "repository": {
     "url": "https://github.com/postoria-app/postoria-mcp-server",
@@ -27,7 +27,7 @@
     {
       "registryType": "npm",
       "identifier": "@postoria/mcp-server",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "transport": {
         "type": "stdio"
       },

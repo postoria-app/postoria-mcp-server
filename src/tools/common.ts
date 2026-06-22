@@ -1,43 +1,44 @@
 import type { z } from 'zod';
 import { formatUnknownError } from '../postoria/errors.js';
 
-export function jsonResult(data: unknown) {
+export function textResult(text: string, isError = false) {
   return {
+    ...(isError ? { isError: true } : {}),
     content: [
       {
         type: 'text' as const,
-        text: JSON.stringify(data, null, 2),
+        text,
       },
     ],
   };
+}
+
+export function jsonResult(data: unknown) {
+  return textResult(JSON.stringify(data, null, 2));
 }
 
 export function emptyResult(message: string) {
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: message,
-      },
-    ],
-  };
+  return textResult(message);
 }
 
 export function errorResult(error: unknown) {
-  return {
-    isError: true,
-    content: [
-      {
-        type: 'text' as const,
-        text: formatUnknownError(error),
-      },
-    ],
-  };
+  return textResult(formatUnknownError(error), true);
 }
 
 export async function callTool<T>(callback: () => Promise<T>) {
   try {
     return jsonResult(await callback());
+  } catch (error) {
+    return errorResult(error);
+  }
+}
+
+export async function callFormattedTool<T>(
+  callback: () => Promise<T>,
+  formatter: (data: T) => string,
+) {
+  try {
+    return textResult(formatter(await callback()));
   } catch (error) {
     return errorResult(error);
   }

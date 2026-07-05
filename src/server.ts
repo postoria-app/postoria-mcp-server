@@ -73,7 +73,7 @@ export function createPostoriaMcpServer(options: CreatePostoriaMcpServerOptions)
           role: 'user',
           content: {
             type: 'text',
-            text: 'Use Postoria tools to create a social post. First call list_workspaces, then list_social_accounts for the chosen workspace. Ask the user to confirm workspace, social accounts, caption, media, and publish timing before calling publish_post_now, schedule_post, add_post_to_queue, or delete_post.',
+            text: 'Use Postoria tools to create or inspect social posts. First call list_workspaces, then list_social_accounts for the chosen workspace. Use list_posts or get_post when the user wants to inspect existing posts. Ask the user to confirm workspace, social accounts, caption, media, and publish timing before calling publish_post_now, schedule_post, add_post_to_queue, or delete_post.',
           },
         },
       ],

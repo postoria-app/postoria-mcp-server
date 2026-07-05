@@ -6,6 +6,7 @@ export type PublicApiListResponse<T> = {
   pagination?: {
     has_more: boolean;
     next_cursor: string | null;
+    next?: string | null;
   };
 };
 
@@ -117,14 +118,51 @@ export type CreatePostRequest = {
   tiktok?: TikTokOptions | null;
 };
 
+export type ListPostsRequest = {
+  account_ids?: number[];
+  queue_id?: number;
+  status?: PostStatus;
+  networks?: Network[];
+  date_from?: string;
+  date_to?: string;
+  limit?: number;
+  cursor?: string;
+};
+
+export type PostStatus = 'draft' | 'scheduled' | 'in_progress' | 'posted' | 'queued' | string;
+
+export type PostFile = {
+  url: string;
+};
+
+export type PostNetworkContent = {
+  caption: string;
+  files: PostFile[];
+};
+
 export type Post = {
   id: number;
-  status: string;
+  status: PostStatus;
+  date?: string | null;
+  queue_id?: number | null;
   results: Array<{
     account_id: number;
     link_to_post: string | null;
     error: string | null;
   }>;
+  facebook?: PostNetworkContent | null;
+  instagram?: PostNetworkContent | null;
+  linkedin?: PostNetworkContent | null;
+  google_business_profile?: PostNetworkContent | null;
+  threads?: PostNetworkContent | null;
+  x?: PostNetworkContent | null;
+  pinterest?: PostNetworkContent | null;
+  youtube?: PostNetworkContent | null;
+  tiktok?: PostNetworkContent | null;
+  telegram?: PostNetworkContent | null;
+  bluesky?: PostNetworkContent | null;
+  reddit?: PostNetworkContent | null;
+  tumblr?: PostNetworkContent | null;
 };
 
 export type PublicApiErrorResponse = {

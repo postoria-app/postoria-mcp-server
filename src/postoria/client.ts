@@ -3,6 +3,7 @@ import type {
   CreateMediaUploadRequest,
   CreatePostRequest,
   ImportMediaRequest,
+  ListPostsRequest,
   Media,
   MediaUploadResponse,
   Post,
@@ -95,6 +96,11 @@ export class PostoriaClient {
     });
   }
 
+  listPosts(workspaceId: number, params: ListPostsRequest = {}) {
+    const query = buildQueryString(params);
+    return this.request<PublicApiListResponse<Post>>(`/workspaces/${workspaceId}/posts${query}`);
+  }
+
   getPost(workspaceId: number, postId: number) {
     return this.request<Post>(`/workspaces/${workspaceId}/posts/${postId}`);
   }
@@ -151,4 +157,36 @@ function normalizeBaseUrl(value: string) {
   }
 
   return trimmed;
+}
+
+function buildQueryString(params: ListPostsRequest) {
+  const query = new URLSearchParams();
+
+  appendRepeated(query, 'account_ids', params.account_ids);
+  appendScalar(query, 'queue_id', params.queue_id);
+  appendScalar(query, 'status', params.status);
+  appendRepeated(query, 'networks', params.networks);
+  appendScalar(query, 'date_from', params.date_from);
+  appendScalar(query, 'date_to', params.date_to);
+  appendScalar(query, 'limit', params.limit);
+  appendScalar(query, 'cursor', params.cursor);
+
+  const value = query.toString();
+  return value ? `?${value}` : '';
+}
+
+function appendScalar(query: URLSearchParams, name: string, value: string | number | undefined) {
+  if (value !== undefined) {
+    query.append(name, String(value));
+  }
+}
+
+function appendRepeated(
+  query: URLSearchParams,
+  name: string,
+  values: Array<string | number> | undefined,
+) {
+  for (const value of values ?? []) {
+    query.append(name, String(value));
+  }
 }

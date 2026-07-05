@@ -20,21 +20,22 @@ npx -y @postoria/mcp-server
 
 ## Supported tools
 
-| Tool                     | Description                                          |
-| ------------------------ | ---------------------------------------------------- |
-| `list_workspaces`        | List available Postoria workspaces                   |
-| `list_social_accounts`   | List social accounts in a workspace                  |
-| `list_queues`            | List queues in a workspace                           |
-| `create_media_upload`    | Create a signed media upload URL                     |
-| `complete_media_upload`  | Complete a media upload after raw bytes are uploaded |
-| `upload_media_from_file` | Upload a local file from stdio clients               |
-| `import_media_from_url`  | Import media from a public URL                       |
-| `get_media`              | Get media status and details                         |
-| `publish_post_now`       | Publish a post immediately                           |
-| `schedule_post`          | Schedule a post for a specific time                  |
-| `add_post_to_queue`      | Add a post to a Postoria queue                       |
-| `get_post`               | Get post status and details                          |
-| `delete_post`            | Delete a post created through the Public API         |
+| Tool                     | Description                                           |
+| ------------------------ | ----------------------------------------------------- |
+| `list_workspaces`        | List available Postoria workspaces                    |
+| `list_social_accounts`   | List social accounts in a workspace                   |
+| `list_queues`            | List queues in a workspace                            |
+| `create_media_upload`    | Create a signed media upload URL                      |
+| `complete_media_upload`  | Complete a media upload after raw bytes are uploaded  |
+| `upload_media_from_file` | Upload a local file from stdio clients                |
+| `import_media_from_url`  | Import media from a public URL                        |
+| `get_media`              | Get media status and details                          |
+| `publish_post_now`       | Publish a post immediately                            |
+| `schedule_post`          | Schedule a post for a specific time                   |
+| `add_post_to_queue`      | Add a post to a Postoria queue                        |
+| `list_posts`             | List posts in a workspace with filters and pagination |
+| `get_post`               | Get post status and details                           |
+| `delete_post`            | Delete a post created through the Public API          |
 
 `upload_media_from_file` is available only in local `stdio` mode. It is not exposed through the hosted Streamable HTTP endpoint.
 

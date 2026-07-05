@@ -3,6 +3,7 @@ import type {
   MediaStatus,
   MediaUploadResponse,
   Post,
+  PostNetworkContent,
   PublicApiListResponse,
   Queue,
   SocialAccount,
@@ -156,6 +157,21 @@ export function formatPost(post: Post, workspaceId: number) {
   return ['Post found.', '', formatPostCard(post, { workspaceId })].join('\n');
 }
 
+export function formatPosts(workspaceId: number, response: PublicApiListResponse<Post>) {
+  if (response.data.length === 0) {
+    return `No posts found in workspace ${workspaceId}.`;
+  }
+
+  return [
+    `Posts in workspace ${workspaceId}:`,
+    '',
+    response.data.map((post) => formatPostCard(post, { workspaceId })).join('\n\n'),
+    paginationNote(response.pagination),
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 export function formatLocalFileMissing(filePath: string) {
   return [
     'Media upload failed.',
@@ -263,23 +279,60 @@ function formatPostCard(post: Post, context: PostContext) {
     `Link: ${result.link_to_post ?? 'none'}`,
     `Error: ${result.error ?? 'none'}`,
   ]);
+  const networkContentLines = formatPostNetworkContent(post);
 
   return [
     'Post',
     `ID: ${post.id}`,
     `Status: ${post.status}`,
     `Workspace ID: ${context.workspaceId}`,
+    ...(post.date ? [`Date: ${post.date}`] : []),
     ...(context.socialAccountIds
       ? [`Social account IDs: ${context.socialAccountIds.join(', ')}`]
       : []),
     ...(context.mediaIds && context.mediaIds.length > 0
       ? [`Media IDs: ${context.mediaIds.join(', ')}`]
       : []),
-    ...(context.queueId ? [`Queue ID: ${context.queueId}`] : []),
+    ...((post.queue_id ?? context.queueId)
+      ? [`Queue ID: ${post.queue_id ?? context.queueId}`]
+      : []),
     ...(context.scheduledTime ? [`Scheduled time: ${context.scheduledTime}`] : []),
     ...(context.caption ? [`Caption: ${context.caption}`] : []),
+    ...(networkContentLines.length > 0 ? ['', 'Content', ...networkContentLines] : []),
     ...(resultLines.length > 0 ? ['', 'Results', ...resultLines] : []),
   ].join('\n');
+}
+
+function formatPostNetworkContent(post: Post) {
+  return [
+    ...formatNetworkContent('facebook', post.facebook),
+    ...formatNetworkContent('instagram', post.instagram),
+    ...formatNetworkContent('linkedin', post.linkedin),
+    ...formatNetworkContent('google_business_profile', post.google_business_profile),
+    ...formatNetworkContent('threads', post.threads),
+    ...formatNetworkContent('x', post.x),
+    ...formatNetworkContent('pinterest', post.pinterest),
+    ...formatNetworkContent('youtube', post.youtube),
+    ...formatNetworkContent('tiktok', post.tiktok),
+    ...formatNetworkContent('telegram', post.telegram),
+    ...formatNetworkContent('bluesky', post.bluesky),
+    ...formatNetworkContent('reddit', post.reddit),
+    ...formatNetworkContent('tumblr', post.tumblr),
+  ];
+}
+
+function formatNetworkContent(network: string, content: PostNetworkContent | null | undefined) {
+  if (!content) {
+    return [];
+  }
+
+  return [
+    `${network}:`,
+    `Caption: ${content.caption || 'none'}`,
+    ...(content.files.length > 0
+      ? ['Files:', ...content.files.map((file) => `- ${file.url}`)]
+      : ['Files: none']),
+  ];
 }
 
 function paginationNote(pagination?: PublicApiListResponse<unknown>['pagination']) {
@@ -287,7 +340,11 @@ function paginationNote(pagination?: PublicApiListResponse<unknown>['pagination'
     return undefined;
   }
 
-  return `More results are available. Next cursor: ${pagination.next_cursor ?? 'none'}`;
+  return [
+    'More results are available.',
+    ...(pagination.next ? [`Next URL: ${pagination.next}`] : []),
+    `Next cursor: ${pagination.next_cursor ?? 'none'}`,
+  ].join('\n');
 }
 
 function isFailedMediaStatus(status: MediaStatus) {

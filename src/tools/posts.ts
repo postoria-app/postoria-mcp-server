@@ -1,13 +1,17 @@
 import { z } from 'zod';
 import { PostoriaClient } from '../postoria/client.js';
-import type { CreatePostRequest } from '../postoria/types.js';
+import type { CreatePostRequest, ListPostsRequest } from '../postoria/types.js';
 import { callEmptyTool, callFormattedTool } from './common.js';
-import { formatPost, formatPostCreated } from './formatters.js';
+import { formatPost, formatPostCreated, formatPosts } from './formatters.js';
 import { createPostBaseSchema, postIdSchema, workspaceIdSchema } from './schemas.js';
 
 type CreatePostArgs = Omit<CreatePostRequest, 'publish_mode'> & {
   workspace_id: number;
   publish_mode: CreatePostRequest['publish_mode'];
+};
+
+type ListPostsArgs = ListPostsRequest & {
+  workspace_id: number;
 };
 
 export function registerPostTools(server: any, client: PostoriaClient) {
@@ -74,6 +78,17 @@ export function registerPostTools(server: any, client: PostoriaClient) {
   );
 
   server.tool(
+    'list_posts',
+    'List posts in a Postoria workspace, optionally filtered by accounts, queue, status, networks, UTC date range, and cursor pagination.',
+    listPostsSchema,
+    async (args: ListPostsArgs) =>
+      callFormattedTool(
+        () => client.listPosts(args.workspace_id, buildListPostsParams(args)),
+        (posts) => formatPosts(args.workspace_id, posts),
+      ),
+  );
+
+  server.tool(
     'delete_post',
     'Delete/cancel a Postoria post. This is destructive and should only be called after user confirmation.',
     {
@@ -117,6 +132,73 @@ function context(args: Omit<CreatePostArgs, 'publish_mode'>) {
   };
 }
 
+function buildListPostsParams(args: ListPostsArgs): ListPostsRequest {
+  return removeUndefined({
+    account_ids: args.account_ids,
+    queue_id: args.queue_id,
+    status: args.status,
+    networks: args.networks,
+    date_from: args.date_from,
+    date_to: args.date_to,
+    limit: args.limit,
+    cursor: args.cursor,
+  });
+}
+
 function removeUndefined<T extends Record<string, unknown>>(value: T): T {
   return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined)) as T;
 }
+
+const listPostsSchema = {
+  ...workspaceIdSchema,
+  account_ids: z
+    .array(z.number().int().positive())
+    .optional()
+    .describe('Optional social account IDs. Posts matching any selected account are returned.'),
+  queue_id: z.number().int().positive().optional().describe('Optional Postoria queue ID.'),
+  status: z
+    .enum(['draft', 'scheduled', 'in_progress', 'posted', 'queued'])
+    .optional()
+    .describe('Optional post status filter.'),
+  networks: z
+    .array(
+      z.enum([
+        'facebook',
+        'instagram',
+        'linkedin',
+        'google_business_profile',
+        'threads',
+        'x',
+        'pinterest',
+        'youtube',
+        'tiktok',
+        'telegram',
+        'bluesky',
+        'reddit',
+        'tumblr',
+      ]),
+    )
+    .optional()
+    .describe('Optional social network filters.'),
+  date_from: z
+    .string()
+    .datetime()
+    .optional()
+    .describe('Optional UTC ISO 8601 lower bound for scheduled date/time.'),
+  date_to: z
+    .string()
+    .datetime()
+    .optional()
+    .describe('Optional UTC ISO 8601 upper bound for scheduled date/time.'),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .describe('Number of posts to return. Defaults to 25; maximum is 100.'),
+  cursor: z
+    .string()
+    .optional()
+    .describe('Pagination cursor returned by the previous list_posts call.'),
+};

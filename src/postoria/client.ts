@@ -15,22 +15,27 @@ import type {
 } from './types.js';
 
 export type PostoriaClientOptions = {
-  apiKey: string;
+  bearerToken?: string;
+  bearerTokenProvider?: () => string | Promise<string>;
   baseUrl?: string;
   userAgent?: string;
 };
 
 export class PostoriaClient {
-  private readonly apiKey: string;
+  private readonly bearerTokenProvider: () => string | Promise<string>;
   private readonly baseUrl: string;
   private readonly userAgent: string;
 
   constructor(options: PostoriaClientOptions) {
-    if (!options.apiKey || options.apiKey.trim().length === 0) {
-      throw new Error('Postoria API key is required.');
+    if (options.bearerTokenProvider) {
+      this.bearerTokenProvider = options.bearerTokenProvider;
+    } else if (options.bearerToken && options.bearerToken.trim().length > 0) {
+      const bearerToken = options.bearerToken.trim();
+      this.bearerTokenProvider = () => bearerToken;
+    } else {
+      throw new Error('Postoria bearer token is required.');
     }
 
-    this.apiKey = options.apiKey.trim();
     this.baseUrl = normalizeBaseUrl(
       options.baseUrl || process.env.POSTORIA_API_BASE_URL || 'https://api.postoria.io/v1',
     );
@@ -115,10 +120,15 @@ export class PostoriaClient {
     path: string,
     options: { method?: string; body?: unknown } = {},
   ): Promise<T> {
+    const bearerToken = await this.bearerTokenProvider();
+    if (!bearerToken || bearerToken.trim().length === 0) {
+      throw new Error('Postoria bearer token is required.');
+    }
+
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: options.method || 'GET',
       headers: {
-        authorization: `Bearer ${this.apiKey}`,
+        authorization: `Bearer ${bearerToken.trim()}`,
         accept: 'application/json',
         'user-agent': this.userAgent,
         ...(options.body === undefined ? {} : { 'content-type': 'application/json' }),

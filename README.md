@@ -42,7 +42,8 @@ npx -y @postoria/mcp-server
 ## Requirements
 
 - Node.js 20+
-- A Postoria Public API key
+- A Postoria Public API key for local stdio usage
+- A Postoria Public API key or OAuth access token for hosted Streamable HTTP usage
 
 ## Local stdio usage
 
@@ -55,7 +56,7 @@ Add this to your MCP client configuration:
       "command": "npx",
       "args": ["-y", "@postoria/mcp-server"],
       "env": {
-        "POSTORIA_API_KEY": "ptr_your_api_key_here"
+        "POSTORIA_API_KEY": "pst_live_your_api_key_here"
       }
     }
   }
@@ -70,10 +71,20 @@ Hosted endpoint:
 https://mcp.postoria.io/mcp
 ```
 
-Send your Postoria API key as a Bearer token:
+Send an `Authorization` header on every hosted MCP request. Postoria Public API keys are forwarded
+to the Public API directly:
 
 ```http
-Authorization: Bearer ptr_your_api_key_here
+Authorization: Bearer pst_live_your_api_key_here
+```
+
+OAuth access tokens accepted by the hosted endpoint are exchanged server-side before calling the
+Postoria Public API.
+
+OAuth-capable clients discover the authorization server from the protected resource metadata:
+
+```text
+https://mcp.postoria.io/.well-known/oauth-protected-resource/mcp
 ```
 
 ## Media upload options
@@ -94,7 +105,7 @@ npm run build
 Run in local stdio mode:
 
 ```bash
-POSTORIA_API_KEY=ptr_your_api_key_here npm run dev:stdio
+POSTORIA_API_KEY=pst_live_your_api_key_here npm run dev:stdio
 ```
 
 Run in local HTTP mode:
@@ -103,7 +114,8 @@ Run in local HTTP mode:
 npm run dev:http
 ```
 
-HTTP mode requires the MCP client to send the Postoria API key in the `Authorization` header. `POSTORIA_API_KEY` is used by local stdio mode only.
+HTTP mode requires the MCP client to send `Authorization: Bearer <token>` on every `/mcp` request.
+`POSTORIA_API_KEY` is used by local stdio mode only.
 
 Local HTTP endpoint:
 
@@ -128,7 +140,8 @@ http://localhost:3000/health
 
 - The MCP server does not store Postoria API keys.
 - Local stdio mode reads `POSTORIA_API_KEY` from the environment.
-- Hosted HTTP mode requires `Authorization: Bearer <api_key>` on MCP initialization.
+- Hosted HTTP mode requires `Authorization: Bearer <token>` on every MCP request.
+- Hosted HTTP mode exchanges OAuth access tokens server-side and does not store refresh tokens.
 - `POSTORIA_API_KEY` is used by local stdio mode only.
 - `delete_post` is destructive and should only be called after user confirmation.
 

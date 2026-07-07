@@ -16,7 +16,8 @@ const packageName = packageJson.name ?? '@postoria/mcp-server';
 const packageVersion = packageJson.version ?? '0.0.0';
 
 export type CreatePostoriaMcpServerOptions = {
-  apiKey: string;
+  bearerToken?: string;
+  bearerTokenProvider?: () => string | Promise<string>;
   apiBaseUrl?: string;
   enableLocalFileUpload?: boolean;
 };
@@ -28,7 +29,8 @@ export function createPostoriaMcpServer(options: CreatePostoriaMcpServerOptions)
   });
 
   const client = new PostoriaClient({
-    apiKey: options.apiKey,
+    bearerToken: options.bearerToken,
+    bearerTokenProvider: options.bearerTokenProvider,
     baseUrl: options.apiBaseUrl,
     userAgent: `${packageName}/${packageVersion}`,
   });
@@ -53,7 +55,7 @@ export function createPostoriaMcpServer(options: CreatePostoriaMcpServerOptions)
               'https://api.postoria.io/v1',
             docs_url: 'https://api.postoria.io/v1/docs/',
             openapi_url: 'https://api.postoria.io/v1/openapi.json',
-            authentication: 'Authorization: Bearer <postoria_api_key>',
+            authentication: 'Authorization: Bearer <postoria_api_key_or_oauth_token>',
             supported_transports: ['stdio', 'streamable_http'],
           },
           null,

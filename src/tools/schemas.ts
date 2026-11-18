@@ -48,6 +48,26 @@ export const repostSchema = z
   .optional()
   .describe('Optional repost/recycle settings.');
 
+export const instagramSchema = z
+  .object({
+    publish_as_trial_reel: z
+      .boolean()
+      .optional()
+      .describe(
+        'Publish as an Instagram Trial Reel. Requires a single video; does not apply to Stories or carousels. Defaults to false if omitted.',
+      ),
+    auto_share_if_performs_well: z
+      .boolean()
+      .optional()
+      .describe(
+        'For Trial Reels only: true lets Instagram automatically share with followers if the Reel performs well based on views in the first 72 hours; false or omitted keeps sharing manual.',
+      ),
+  })
+  .optional()
+  .describe(
+    'Optional Instagram-specific settings. Requires a selected Instagram account. Applies only to Instagram.',
+  );
+
 export const youtubeSchema = z
   .object({
     title: z.string().optional().describe('YouTube video title.'),
@@ -104,6 +124,7 @@ export const createPostBaseSchema = {
     .optional()
     .describe('Optional first comment delay, in minutes.'),
   repost: repostSchema,
+  instagram: instagramSchema,
   youtube: youtubeSchema,
   tiktok: tiktokSchema,
 };

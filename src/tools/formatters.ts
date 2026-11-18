@@ -1,4 +1,5 @@
 import type {
+  InstagramPostNetworkContent,
   Media,
   MediaStatus,
   MediaUploadResponse,
@@ -306,7 +307,7 @@ function formatPostCard(post: Post, context: PostContext) {
 function formatPostNetworkContent(post: Post) {
   return [
     ...formatNetworkContent('facebook', post.facebook),
-    ...formatNetworkContent('instagram', post.instagram),
+    ...formatInstagramContent(post.instagram),
     ...formatNetworkContent('linkedin', post.linkedin),
     ...formatNetworkContent('google_business_profile', post.google_business_profile),
     ...formatNetworkContent('threads', post.threads),
@@ -318,6 +319,22 @@ function formatPostNetworkContent(post: Post) {
     ...formatNetworkContent('bluesky', post.bluesky),
     ...formatNetworkContent('reddit', post.reddit),
     ...formatNetworkContent('tumblr', post.tumblr),
+  ];
+}
+
+function formatInstagramContent(content: InstagramPostNetworkContent | null | undefined) {
+  if (!content) {
+    return [];
+  }
+
+  return [
+    ...formatNetworkContent('instagram', content),
+    ...(content.publish_as_trial_reel != null
+      ? [`Publish as Trial Reel: ${content.publish_as_trial_reel}`]
+      : []),
+    ...(content.auto_share_if_performs_well != null
+      ? [`Auto share if performs well: ${content.auto_share_if_performs_well}`]
+      : []),
   ];
 }
 

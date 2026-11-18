@@ -116,6 +116,7 @@ function buildPostBody(args: CreatePostArgs): CreatePostRequest {
     scheduled_time: args.scheduled_time,
     queue_id: args.queue_id,
     repost: args.repost,
+    instagram: args.instagram,
     youtube: args.youtube,
     tiktok: args.tiktok,
   });

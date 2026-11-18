@@ -80,6 +80,11 @@ export type RepostSettings = {
   until?: string | null;
 };
 
+export type InstagramOptions = {
+  publish_as_trial_reel?: boolean | null;
+  auto_share_if_performs_well?: boolean | null;
+};
+
 export type YouTubeOptions = {
   title?: string | null;
   visibility?: string | null;
@@ -114,6 +119,7 @@ export type CreatePostRequest = {
   scheduled_time?: string | null;
   queue_id?: number | null;
   repost?: RepostSettings | null;
+  instagram?: InstagramOptions | null;
   youtube?: YouTubeOptions | null;
   tiktok?: TikTokOptions | null;
 };
@@ -140,6 +146,8 @@ export type PostNetworkContent = {
   files: PostFile[];
 };
 
+export type InstagramPostNetworkContent = PostNetworkContent & InstagramOptions;
+
 export type Post = {
   id: number;
   status: PostStatus;
@@ -151,7 +159,7 @@ export type Post = {
     error: string | null;
   }>;
   facebook?: PostNetworkContent | null;
-  instagram?: PostNetworkContent | null;
+  instagram?: InstagramPostNetworkContent | null;
   linkedin?: PostNetworkContent | null;
   google_business_profile?: PostNetworkContent | null;
   threads?: PostNetworkContent | null;

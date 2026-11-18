@@ -95,6 +95,37 @@ Use `create_media_upload` when the client will upload raw file bytes to the retu
 
 Use `upload_media_from_file` in local `stdio` mode when the media file exists on the same machine where the MCP server is running.
 
+## Social network options
+
+`publish_post_now`, `schedule_post`, and `add_post_to_queue` accept optional settings grouped by social network:
+
+- `instagram`: Trial Reel publishing and automatic sharing.
+- `youtube`: video title, visibility, category, audience, language, recording date, and tags.
+- `tiktok`: visibility, interactions, content disclosure, photo title, and automatic music for photos.
+
+Each object requires a selected account of that network and applies only to that network. Tool input schemas list the supported fields; MCP currently exposes a subset of the Public API options.
+
+For example, include these settings when creating a video post for Instagram, YouTube, and TikTok:
+
+```json
+{
+  "instagram": {
+    "publish_as_trial_reel": true,
+    "auto_share_if_performs_well": false
+  },
+  "youtube": {
+    "title": "Video title"
+  },
+  "tiktok": {
+    "allow_comments": true
+  }
+}
+```
+
+Use `content_type: "video"` with one video for this example. Instagram Trial Reels require an eligible account and a single video. `publish_as_trial_reel` defaults to `false`. For Trial Reels, `auto_share_if_performs_well: true` lets Instagram decide whether to share with followers based on views in the first 72 hours; `false` or omitted keeps sharing manual in Instagram.
+
+Post creation responses, `get_post`, and `list_posts` include the saved Instagram Trial Reel settings when returned by the API, including explicit `false` values. They describe the publishing settings, not the live distribution status on Instagram.
+
 ## Run from source
 
 ```bash
